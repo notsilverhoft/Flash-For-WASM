@@ -46,17 +46,23 @@ void play(std::string swfFile) {
         case 0:
             std::cout << "File is uncompressed... Continue.\n";
             break;
-        case 1:
+        case 1: {
             std::cout << "File is compressed with Zlib... Decompressing...\n";
-            decompressSWF(swfFile, fileSize, 1);
+            std::vector<uint8_t> mainSwf = decompressSWF(swfFile, fileSize, 1);
             break;
-        case 2:
-            std::cout << "File is compressed with Lzma... Unsupported...\n";
+        }
+        case 2: {
+            std::cout << "File is compressed with LZMA... Decompressing...\n";
+            std::vector<uint8_t> mainSwf = decompressSWF(swfFile, fileSize, 2);
+            std::cout << "Debug: Actual output size:" << fileSize << "\n";
+            std::cout << "Debug: Size of decompressed output:" << mainSwf.size() << "\n";
+            std::cout << "Debug: First Byte:" << mainSwf[0] << "\n";
             break;
-        default:
+        }
+        default: {
             std::cout << "Bad compression, use another file, or try again.\n";
             return;
-
+        }
     }
     
 
