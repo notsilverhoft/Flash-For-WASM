@@ -10,3 +10,4 @@ uint32_t getFileLength(std::string swfFile);
 uint32_t getCompressedLength(std::string swfFile);
 std::vector<uint8_t> getLzmaOptions(std::string swfFile);
 uint32_t getDictSize(std::string swfFile);
+std::vector<uint8_t> fileToVector(std::string swfFile);

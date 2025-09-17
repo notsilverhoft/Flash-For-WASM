@@ -138,3 +138,21 @@ uint32_t getDictSize(std::string swfFile) {
     return binOut;
 
 }
+std::vector<uint8_t> fileToVector(std::string swfFile) {
+
+    std::ifstream file(swfFile, std::ios::binary);
+
+    file.seekg(0, std::ios::end);
+    std::size_t size = static_cast<std::size_t>(file.tellg());
+    std::vector<uint8_t> binOut(size);
+    file.seekg(0);
+    file.read(reinterpret_cast<char*>(binOut.data()), size);
+    if (!file) {
+
+            std::cout << "Error: Something happend when reading file, please try again!\n";
+
+            return {};
+
+    }
+    return binOut;
+}

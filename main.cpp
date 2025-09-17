@@ -10,10 +10,11 @@ int main(int argc, char* argv[]) {
     if (argc > 1) {
 
         std::string inputFile(argv[1]);
+        bool debug(argv[2]); 
 
         if (isAFile(inputFile)) {
             
-            play(inputFile);
+            play(inputFile, debug);
 
             return 0;
 
@@ -29,7 +30,7 @@ int main(int argc, char* argv[]) {
     }
 }
 
-void play(std::string swfFile) {
+void play(std::string swfFile, bool debug = false) {
 
     int compression = isCompressed(swfFile);
     int version = getSWFVersion(swfFile);
@@ -43,20 +44,43 @@ void play(std::string swfFile) {
     }
     switch(compression) {
 
-        case 0:
+        case 0: {
             std::cout << "File is uncompressed... Continue.\n";
+            std::vector<uint8_t> mainSwf = fileToVector(swfFile);
+
+            if( debug ) {
+
+                std::cout << "Debug: First Byte:" << mainSwf[0] << "\n";
+
+            }
             break;
+        }
         case 1: {
             std::cout << "File is compressed with Zlib... Decompressing...\n";
             std::vector<uint8_t> mainSwf = decompressSWF(swfFile, fileSize, 1);
+
+            if( debug ) { 
+
+                std::cout << "Debug: Actual output size:" << fileSize << "\n";
+                std::cout << "Debug: Size of decompressed output:" << mainSwf.size() << "\n";
+                std::cout << "Debug: First Byte:" << mainSwf[0] << "\n";
+
+            }
+
             break;
         }
         case 2: {
             std::cout << "File is compressed with LZMA... Decompressing...\n";
             std::vector<uint8_t> mainSwf = decompressSWF(swfFile, fileSize, 2);
-            std::cout << "Debug: Actual output size:" << fileSize << "\n";
-            std::cout << "Debug: Size of decompressed output:" << mainSwf.size() << "\n";
-            std::cout << "Debug: First Byte:" << mainSwf[0] << "\n";
+
+            if( debug ) { 
+
+                std::cout << "Debug: Actual output size:" << fileSize << "\n";
+                std::cout << "Debug: Size of decompressed output:" << mainSwf.size() << "\n";
+                std::cout << "Debug: First Byte:" << mainSwf[0] << "\n";
+
+            }
+
             break;
         }
         default: {
@@ -65,5 +89,11 @@ void play(std::string swfFile) {
         }
     }
     
+    
+
+}
+extern "C" void play_c(const char* swfFile, int debug) { //EMScripten Wrapper
+
+    play(std::string(swfFile), debug != 0);
 
 }
