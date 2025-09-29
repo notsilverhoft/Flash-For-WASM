@@ -50,9 +50,12 @@ void play(std::string swfFile, bool debug = false) {
 
             if( debug ) {
 
-                std::cout << "Debug: First Byte:" << mainSwf[0] << "\n";
+                std::cout << "Debug: First Byte: " << (int)mainSwf[0] << "\n";
 
             }
+
+            play(mainSwf, debug);
+
             break;
         }
         case 1: {
@@ -63,9 +66,11 @@ void play(std::string swfFile, bool debug = false) {
 
                 std::cout << "Debug: Actual output size:" << fileSize << "\n";
                 std::cout << "Debug: Size of decompressed output:" << mainSwf.size() << "\n";
-                std::cout << "Debug: First Byte:" << mainSwf[0] << "\n";
+                std::cout << "Debug: First Byte:" << (int)mainSwf[0] << "\n";
 
             }
+
+            play(mainSwf, debug);
 
             break;
         }
@@ -77,9 +82,11 @@ void play(std::string swfFile, bool debug = false) {
 
                 std::cout << "Debug: Actual output size:" << fileSize << "\n";
                 std::cout << "Debug: Size of decompressed output:" << mainSwf.size() << "\n";
-                std::cout << "Debug: First Byte:" << mainSwf[0] << "\n";
+                std::cout << "Debug: First Byte:" << (int)mainSwf[0] << "\n";
 
             }
+            
+            play(mainSwf, debug);
 
             break;
         }
@@ -87,13 +94,26 @@ void play(std::string swfFile, bool debug = false) {
             std::cout << "Bad compression, use another file, or try again.\n";
             return;
         }
+
     }
-    
-    
 
 }
 extern "C" void play_c(const char* swfFile, int debug) { //EMScripten Wrapper
 
     play(std::string(swfFile), debug != 0);
+
+}
+
+void play(std::vector<uint8_t> swfFile, bool debug = false) { //After compression stuff
+
+    if( debug ) {
+
+        std::cout << "Debug: temp: " << (int)swfFile[0] << "\n";
+        int bitSize = getFrameBitSize(swfFile);
+        std::cout << "Debug: Frame Bit Size: " << bitSize << "\n";
+
+    }
+    getFrameCoords(swfFile);
+    
 
 }

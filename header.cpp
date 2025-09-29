@@ -3,7 +3,9 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <cmath>
 #include "header.h"
+
 
 uint8_t getCompressionFromFile(std::string swfFile) {
 
@@ -143,9 +145,9 @@ std::vector<uint8_t> fileToVector(std::string swfFile) {
     std::ifstream file(swfFile, std::ios::binary);
 
     file.seekg(0, std::ios::end);
-    std::size_t size = static_cast<std::size_t>(file.tellg());
+    std::size_t size = static_cast<std::size_t>(file.tellg()) - 8;
     std::vector<uint8_t> binOut(size);
-    file.seekg(0);
+    file.seekg(8);
     file.read(reinterpret_cast<char*>(binOut.data()), size);
     if (!file) {
 
@@ -154,5 +156,140 @@ std::vector<uint8_t> fileToVector(std::string swfFile) {
             return {};
 
     }
+    return binOut;
+}
+int getFrameBitSize(std::vector<uint8_t> swfFile) {
+
+    uint8_t val1 = swfFile[0];
+    uint8_t val2 = swfFile[1];
+
+    uint16_t bitSizeByte = (val1 << 8) | val2;
+
+    uint16_t bitSize = (bitSizeByte >> 11) & 0x1F;
+
+
+    return (int)bitSize;
+
+}
+std::vector<int> getFrameCoords(std::vector<uint8_t> swfFile) {
+
+    int bitSize = getFrameBitSize(swfFile);
+
+    int totalBits = bitSize * 4;
+    double neededBits = totalBits - 11;
+    int neededBytes = ceil(neededBits / 8);
+
+    std::vector<int> frameBits;
+
+    for (size_t byteIndex = 0; byteIndex < neededBytes + 2; ++byteIndex) {
+    uint8_t currentByte = swfFile[byteIndex];
+
+    for (int bitPos = 7; bitPos >= 0; --bitPos) {
+
+        int bit = (currentByte >> bitPos) & 1;
+        frameBits.push_back(bit);
+        
+    }
+    }
+
+     //Xmin:
+
+     int xMinOut;
+     
+     uint32_t xMin = 0;
+
+     for (int i = 6; i < bitSize - 1 + 6; ++i) { //For my own sanity...
+
+
+        xMin = (xMin << 1) | frameBits[i];
+
+
+     }
+     if (frameBits[5] == 1) {
+
+        xMinOut = (0 - (int)xMin) / 20;
+
+     } 
+     else {
+
+        xMinOut = (int)xMin / 20;
+        
+     }
+
+     //Xmax:
+
+     int xMaxOut;             
+     
+     uint32_t xMax = 0;
+
+     for (int i = 6 + bitSize; i < 2 * bitSize - 1 + 6; ++i) { //For my own sanity...
+
+
+        xMax = (xMax << 1) | frameBits[i];
+
+
+     }
+     if (frameBits[5 + bitSize] == 1) {
+
+        xMaxOut = (0 - (int)xMax) / 20;
+
+     } 
+     else {
+
+        xMaxOut = (int)xMax / 20;
+        
+     }    
+    
+    //Ymin:
+
+     int yMinOut;             
+     
+     uint32_t yMin = 0;
+
+     for (int i = 6 + 2 * bitSize; i < 3 * bitSize - 1 + 6; ++i) { //For my own sanity...
+
+
+        yMin = (yMin << 1) | frameBits[i];
+
+
+     }
+     if (frameBits[5 + (2 * bitSize) + 1] == 1) {
+
+        yMinOut = (0 - (int)yMin) / 20;
+
+     } 
+     else {
+
+        yMinOut = (int)yMin / 20;
+        
+     }
+
+    //Ymax:
+
+     int yMaxOut;
+     
+     uint32_t yMax = 0;
+
+     for (int i = 6 + 3 * bitSize; i < 4 * bitSize - 1 + 6; ++i) { //For my own sanity...
+
+
+        yMax = (yMax << 1) | frameBits[i];
+
+
+     }
+     if (frameBits[5 + (3 * bitSize) + 1] == 1) {
+
+        yMaxOut = (0 - (int)yMax) / 20;
+
+     } 
+     else {
+
+        yMaxOut = (int)yMax / 20;
+        
+     }
+
+
+     std::vector<int> binOut = {xMinOut, xMaxOut, yMinOut, yMaxOut};
+    
     return binOut;
 }
