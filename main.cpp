@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <cstdint>
+#include <vector>
+#include <utility>
 #include "header.h"
 #include "main.h"
 #include "decom.h"
@@ -106,14 +108,25 @@ extern "C" void play_c(const char* swfFile, int debug) { //EMScripten Wrapper
 
 void play(std::vector<uint8_t> swfFile, bool debug = false) { //After compression stuff
 
+    std::vector<int> frameCoords = getFrameCoords(swfFile);
+    std::vector<float> frameRate = getFrameRate(swfFile);
+    std::vector<std::pair<uint16_t, int>> frameCount = getFrameCount(swfFile, frameRate[1]);
+
     if( debug ) {
 
         std::cout << "Debug: temp: " << (int)swfFile[0] << "\n";
         int bitSize = getFrameBitSize(swfFile);
         std::cout << "Debug: Frame Bit Size: " << bitSize << "\n";
+        std::cout << "Debug: Xmin: " << frameCoords[0] << "\n";
+        std::cout << "Debug: Xmax: " << frameCoords[1] << "\n";
+        std::cout << "Debug: Ymin: " << frameCoords[2] << "\n";
+        std::cout << "Debug: Ymax: " << frameCoords[3] << "\n";
+        std::cout << "Debug: Framerate: " << frameRate[0] << "\n";
+        std::cout << "Debug: Frame count: " << frameCount[0].first << "\n";
 
     }
-    getFrameCoords(swfFile);
     
+
+
 
 }

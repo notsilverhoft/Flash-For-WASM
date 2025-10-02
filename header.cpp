@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <utility>
 #include "header.h"
 
 
@@ -292,4 +293,37 @@ std::vector<int> getFrameCoords(std::vector<uint8_t> swfFile) {
      std::vector<int> binOut = {xMinOut, xMaxOut, yMinOut, yMaxOut};
     
     return binOut;
+}
+
+std::vector<float> getFrameRate(std::vector<uint8_t> swfFile) {
+
+    int bitPlace = getFrameBitSize(swfFile);
+    int totalBits = bitPlace * 4;
+    double neededBits = totalBits - 11;
+    int totalBytes = ceil(neededBits / 8) + 2;
+
+    uint8_t val1 = swfFile[totalBytes];
+    uint8_t val2 = swfFile[totalBytes + 1];
+
+    float binOut = ((float)val1 / 256) + (float)val2;
+    
+    std::vector<float> out = {binOut, (float)totalBytes + 2};
+
+    return out;
+
+}
+std::vector<std::pair<uint16_t, int>> getFrameCount(std::vector<uint8_t> swfFile, float startingByte) {
+
+    uint8_t val1 = swfFile[startingByte];
+    uint8_t val2 = swfFile[startingByte + 1];
+
+    uint16_t binOut = val1 | (val2 << 8);
+    int nextByte = startingByte + 2;
+
+    std::vector<std::pair<uint16_t, int>> returnValue;
+
+    returnValue.push_back({binOut, nextByte});
+
+    return returnValue;
+
 }
